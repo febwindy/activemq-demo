@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <mvc:component-scan base-package="me.activemq.demo"/>
+
+    <!-- 配置connectionFactory -->
+    <bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL">
+            <value>tcp://58.221.42.198:61616</value>
+        </property>
+        <property name="userName" value="admin"/>
+        <property name="password" value="admin"/>
+    </bean>
+
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+        <property name="connectionFactory" ref="targetConnectionFactory"/>
+        <property name="maxConnections" value="1000"/>
+    </bean>
+
+    <!-- Spring JMS Template -->
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="sessionTransacted" value="false"/>
+        <property name="sessionAcknowledgeMode" value="2"/>
+    </bean>
+
+    <bean id="publisher" class="me.activemq.demo.Publisher"/>
+    <bean id="consumer" class="me.activemq.demo.Consumer">
+        <property name="messageConverter" ref="emailMessageConverter"/>
+    </bean>
+
+    <bean id="emailMessageConverter" class="me.activemq.demo.application.converter.EmailMessageConverter"/>
+
+</beans>
